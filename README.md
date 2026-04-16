@@ -9,11 +9,11 @@
 
 ## 2. 项目技术栈
 本项目是多种技术栈组合，主要包括：
-. Dify
-. Trae-Agent
-. Qwen2.5-72B-Instruct(vLLM)
-. NebulaGraph
-. Weaviate
-. Next.js
+1. Dify
+2. Trae-Agent
+3. Qwen2.5-72B-Instruct(vLLM)
+4. NebulaGraph
+5. Weaviate
+6. Next.js
 
 
