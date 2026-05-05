@@ -1,0 +1,75 @@
+x-defaults: &defaults
+  environment:
+    TZ: Asia/Shanghai
+  restart: unless-stopped
+  networks:
+    - docker_default
+
+networks:
+  docker_default:
+    external: true
+
+volumes:
+  nebula-meta-data:
+  nebula-meta-logs:
+  nebula-storaged-data:
+  nebula-storaged-logs:
+  nebula-graphd-logs:
+
+services:
+  nebula-metad:
+    <<: *defaults
+    image: vesoft/nebula-metad:v3.9.0
+    container_name: nebula-metad
+    command:
+      - --meta_server_addrs=nebula-metad:9559
+      - --local_ip=nebula-metad
+      - --data_path=/nebula/data
+      - --log_dir=/nebula/logs
+    volumes:
+      - nebula-meta-data:/nebula/data
+      - nebula-meta-logs:/nebula/logs
+
+  nebula-storaged:
+    <<: *defaults
+    image: vesoft/nebula-storaged:v3.9.0
+    container_name: nebula-storaged
+    command:
+      - --meta_server_addrs=nebula-metad:9559
+      - --local_ip=nebula-storaged
+      - --data_path=/nebula/data
+      - --log_dir=/nebula/logs
+    volumes:
+      - nebula-storaged-data:/nebula/data
+      - nebula-storaged-logs:/nebula/logs
+    depends_on:
+      - nebula-metad
+
+  nebula-graphd:
+    <<: *defaults
+    image: vesoft/nebula-graphd:v3.9.0
+    container_name: nebula-graphd
+    command:
+      - --meta_server_addrs=nebula-metad:9559
+      - --local_ip=nebula-graphd
+      - --log_dir=/nebula/logs
+    volumes:
+      - nebula-graphd-logs:/nebula/logs
+    ports:
+      - "9669:9669"
+    depends_on:
+      - nebula-storaged
+
+  nebula-studio:
+    <<: *defaults
+    image: vesoft/nebula-studio:v3.9.0
+    container_name: nebula-studio
+    environment:
+      PORT: 7001
+      HOST: 0.0.0.0
+      NEBULA_graphd_HOST: nebula-graphd
+      NEBULA_graphd_PORT: 9669
+    ports:
+      - "7001:7001"
+    depends_on:
+      - nebula-graphd
